@@ -9,19 +9,19 @@ import torch.optim as optim
 from visualizer import draw_pointcloud
 
 def compute_face(alpha, delta):
-    mu_id = torch.tensor(fetch_weights('shape/model/mean'), dtype=torch.float64)
-    mu_exp = torch.tensor(fetch_weights('expression/model/mean'), dtype=torch.float64)
+    mu_id = torch.tensor(fetch_weights('shape/model/mean'), dtype=torch.float64, device='cuda')
+    mu_exp = torch.tensor(fetch_weights('expression/model/mean'), dtype=torch.float64, device='cuda')
 
-    sigma_id = torch.tensor(np.sqrt(fetch_weights('shape/model/pcaVariance', False))[0:20], dtype=torch.float64)
-    sigma_exp = torch.tensor(np.sqrt(fetch_weights('expression/model/pcaVariance', False))[0:30], dtype=torch.float64)
+    sigma_id = torch.tensor(np.sqrt(fetch_weights('shape/model/pcaVariance', False))[0:20], dtype=torch.float64, device='cuda')
+    sigma_exp = torch.tensor(np.sqrt(fetch_weights('expression/model/pcaVariance', False))[0:30], dtype=torch.float64, device='cuda')
 
     E_id = fetch_weights('shape/model/pcaBasis', False)
     E_id = np.reshape(E_id, (-1, 3, 199))
-    E_id = torch.tensor(E_id[:,:,0:20], dtype=torch.float64)
+    E_id = torch.tensor(E_id[:,:,0:20], dtype=torch.float64, device='cuda')
 
     E_exp = fetch_weights('expression/model/pcaBasis', False)
     E_exp = np.reshape(E_exp, (-1, 3, 100))
-    E_exp = torch.tensor(E_exp[:,:,0:30], dtype=torch.float64)
+    E_exp = torch.tensor(E_exp[:,:,0:30], dtype=torch.float64, device='cuda')
 
     facial_pointcloud = mu_id + E_id @ (alpha*sigma_id) + E_exp @ (delta*sigma_exp)
 
@@ -46,10 +46,10 @@ def generate_face_pointcloud(alpha = np.random.uniform(-1, 1, 20), delta = np.ra
 
 if __name__ =='__main__':
 
-    alpha = np.random.uniform(-1, 1, 20)
-    delta = np.random.uniform(-1, 1, 30)
+    alpha = torch.tensor(np.random.uniform(-1, 1, 20), dtype=torch.double, device='cuda')
+    delta = torch.tensor(np.random.uniform(-1, 1, 30), dtype=torch.double, device='cuda')
 
     face_pointcloud = compute_face(alpha, delta)
     colors = fetch_weights('color/model/mean')
-    draw_pointcloud(face_pointcloud, colors)
+    draw_pointcloud(face_pointcloud.detach().cpu().numpy(), colors)
 

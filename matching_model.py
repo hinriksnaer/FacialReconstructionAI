@@ -39,3 +39,8 @@ class Matcher(nn.Module):
         train, colors = generate_model_projection(self.alpha, self.delta, self.w, self.f, self.n, self.left, self.bottom, self.right, self.top, self.t, keypoints)
 
         return train, colors
+
+    def generate_3d_model(self):
+        points_3d, colors = generate_face_pointcloud(self.alpha, self.delta)
+
+        return points_3d, colors
